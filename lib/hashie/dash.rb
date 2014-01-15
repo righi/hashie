@@ -55,14 +55,21 @@ module Hashie
       end
       required_properties << property_name if options.delete(:required)
     end
+    
 
     class << self
       attr_reader :properties, :defaults
       attr_reader :required_properties
+      attr_reader :ignore_extra_properties
     end
     instance_variable_set('@properties', Set.new)
     instance_variable_set('@defaults', {})
     instance_variable_set('@required_properties', Set.new)
+    instance_variable_set('@ignore_extra_properties', false)
+
+    def self.ignore_extra_properties!
+      @ignore_extra_properties = true
+    end
 
     def self.inherited(klass)
       super
@@ -70,6 +77,7 @@ module Hashie
       klass.instance_variable_set('@properties', self.properties.dup)
       klass.instance_variable_set('@defaults', self.defaults.dup)
       klass.instance_variable_set('@required_properties', self.required_properties.dup)
+      klass.instance_variable_set('@ignore_extra_properties', self.ignore_extra_properties)
     end
 
     # Check to see if the specified property has already been
@@ -108,23 +116,31 @@ module Hashie
     # Retrieve a value from the Dash (will return the
     # property's default value if it hasn't been set).
     def [](property)
-      assert_property_exists! property
-      value = super(property.to_s)
-      # If the value is a lambda, proc, or whatever answers to call, eval the thing!
-      if value.is_a? Proc
-        self[property] = value.call # Set the result of the call as a value
-      else
-        yield value if block_given?
-        value
+      begin
+        assert_property_exists! property
+        value = super(property.to_s)
+        # If the value is a lambda, proc, or whatever answers to call, eval the thing!
+        if value.is_a? Proc
+          self[property] = value.call # Set the result of the call as a value
+        else
+          yield value if block_given?
+          value
+        end
+      rescue NoMethodError => e
+        raise e unless @ignore_extra_properties
       end
     end
 
     # Set a value on the Dash in a Hash-like way. Only works
     # on pre-existing properties.
     def []=(property, value)
-      assert_property_required! property, value
-      assert_property_exists! property
-      super(property.to_s, value)
+      begin
+        assert_property_required! property, value
+        assert_property_exists! property
+        super(property.to_s, value)
+      rescue NoMethodError => e
+        raise e unless @ignore_extra_properties
+      end
     end
 
     def replace(other_hash)
