@@ -86,15 +86,6 @@ describe Hashie::Trash do
     it 'sets the translated properties' do
       TrashTest.new(:firstName => 'Michael').first_name.should == 'Michael'
     end
-
-    it 'ignores extra properties when instructed to do so ignore_extra_properties' do
-      expect{
-        trash = IgnorablePropertyTrash.new(:city => 'San Francisco', :state => 'California')
-        expect(trash.city).to eq("San Francisco")
-        expect{trash.state}.to raise_error(NoMethodError)
-      }.to_not raise_error
-    end
-
   end
 
   describe 'translating properties using a proc' do
@@ -165,4 +156,13 @@ describe Hashie::Trash do
       end
     }.to raise_error(ArgumentError)
   end
+
+  it 'should not raise an error when extra (unknown) properties are specified if ignore_extra_properties! has been set' do
+    expect{
+      trash = IgnorablePropertyTrash.new(:city => 'San Francisco', :state => 'California')
+      expect(trash.city).to eq("San Francisco")
+      expect{trash.state}.to raise_error(NoMethodError)
+    }.to_not raise_error
+  end
+
 end
