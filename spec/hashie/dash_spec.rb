@@ -30,6 +30,11 @@ class DeferredTest < Hashie::Dash
   property :created_at, :default => Proc.new { Time.now }
 end
 
+class IgnorablePropertyDash < Hashie::Dash
+  ignore_extra_properties!
+  property :city
+end
+
 describe DashTest do
 
   subject { DashTest.new(:first_name => 'Bob', :email => 'bob@example.com') }
@@ -118,6 +123,10 @@ describe DashTest do
   describe '.new' do
     it 'fails with non-existent properties' do
       lambda { described_class.new(:bork => '') }.should raise_error(NoMethodError)
+    end
+
+    it 'does not fail with non-exstent properties when ignore_extra_properties! is set' do
+      expect{IgnorablePropertyDash.new(:city => 'Pittsburgh', :state => 'PA')}.to_not raise_error(NoMethodError)
     end
 
     it 'should set properties that it is able to' do

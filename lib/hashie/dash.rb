@@ -126,7 +126,7 @@ module Hashie
           value
         end
       rescue NoMethodError => e
-        raise e unless @ignore_extra_properties
+        raise e unless self.class.ignore_extra_properties
       end
     end
 
@@ -138,7 +138,7 @@ module Hashie
         assert_property_exists! property
         super(property.to_s, value)
       rescue NoMethodError => e
-        raise e unless @ignore_extra_properties
+        raise e unless self.class.ignore_extra_properties
       end
     end
 
