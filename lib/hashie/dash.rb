@@ -55,7 +55,6 @@ module Hashie
       end
       required_properties << property_name if options.delete(:required)
     end
-    
 
     class << self
       attr_reader :properties, :defaults
