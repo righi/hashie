@@ -69,11 +69,7 @@ module Hashie
     #
     def property_exists?(property)
       unless self.class.property?(property.to_sym)
-        if self.class.ignore_extra_properties
-          return false
-        else
-          raise NoMethodError, "The property '#{property}' is not defined for this Trash."
-        end
+        raise NoMethodError, "The property '#{property}' is not defined for this Trash."
       end
       true
     end

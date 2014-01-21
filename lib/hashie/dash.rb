@@ -115,31 +115,23 @@ module Hashie
     # Retrieve a value from the Dash (will return the
     # property's default value if it hasn't been set).
     def [](property)
-      begin
-        assert_property_exists! property
-        value = super(property.to_s)
-        # If the value is a lambda, proc, or whatever answers to call, eval the thing!
-        if value.is_a? Proc
-          self[property] = value.call # Set the result of the call as a value
-        else
-          yield value if block_given?
-          value
-        end
-      rescue NoMethodError => e
-        raise e unless self.class.ignore_extra_properties
+      assert_property_exists! property
+      value = super(property.to_s)
+      # If the value is a lambda, proc, or whatever answers to call, eval the thing!
+      if value.is_a? Proc
+        self[property] = value.call # Set the result of the call as a value
+      else
+        yield value if block_given?
+        value
       end
     end
 
     # Set a value on the Dash in a Hash-like way. Only works
     # on pre-existing properties.
     def []=(property, value)
-      begin
-        assert_property_required! property, value
-        assert_property_exists! property
-        super(property.to_s, value)
-      rescue NoMethodError => e
-        raise e unless self.class.ignore_extra_properties
-      end
+      assert_property_required! property, value
+      assert_property_exists! property
+      super(property.to_s, value)
     end
 
     def replace(other_hash)
@@ -153,7 +145,7 @@ module Hashie
 
       def initialize_attributes(attributes)
         attributes.each_pair do |att, value|
-          self[att] = value
+          self[att] = value unless self.class.ignore_extra_properties && !self.class.property?(att)
         end if attributes
       end
 

@@ -125,8 +125,8 @@ describe DashTest do
       lambda { described_class.new(:bork => '') }.should raise_error(NoMethodError)
     end
 
-    it 'does not fail with non-exstent properties when ignore_extra_properties! is set' do
-      expect{IgnorablePropertyDash.new(:city => 'Pittsburgh', :state => 'PA')}.to_not raise_error(NoMethodError)
+    it 'does not fail with non-existent properties when ignore_extra_properties! is used' do
+      lambda { IgnorablePropertyDash.new(:city => 'Pittsburgh', :state => 'PA') }.should_not raise_error
     end
 
     it 'should set properties that it is able to' do
